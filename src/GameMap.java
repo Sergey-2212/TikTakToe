@@ -16,6 +16,7 @@ public class GameMap extends JPanel {
     private static final int STATE_WIN_HUMAN = 1;
     private static final int STATE_WIN_AI = 2;
     private static final int STATE_WIN_HUMAN2 = 3;
+    private static final int HUMAN1_TURN = 1;
 
 
 
@@ -32,7 +33,7 @@ public class GameMap extends JPanel {
     private boolean isGameOver;
     private boolean isInitialized;
     private int gameMode;
-    private int playerNumTurn;
+    private int playerNumTurn; //добавил переменную - какой Human ходит.
 
 
     public GameMap() {
@@ -41,7 +42,11 @@ public class GameMap extends JPanel {
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                update(e);
+                if (gameMode == MODE_VS_AI) {
+                    update(e);
+                } else {
+                    update(e, playerNumTurn); // если выбран GameMode HumanVsHuman,
+                    } // то запускается метод update с доп. параметром - какой игрок ходит
             }
         });
     }
@@ -52,25 +57,45 @@ public class GameMap extends JPanel {
         }
 
         if (!playerTurn(e)) {
-            return;
+
         }
 
         if (gameCheck(DOT_HUMAN, STATE_WIN_HUMAN)) {
             return;
         }
-        //if (gameMode == MODE_VS_AI) {
+
             aiTurn();
             repaint();
-       // } else {
-       //     if (!player2Turn(e)) {
-       //         return;
-       //     }
 
-       // }
 
         if (gameCheck(DOT_AI, STATE_WIN_AI)) {
             return;
         }
+    }
+    //дополнительный метод для двух хуманов
+    private void update(MouseEvent e, int playerNumTurn) {
+        if (isGameOver || !isInitialized) {
+            return;
+        }
+        if (playerNumTurn == HUMAN1_TURN) {
+                if (!playerTurn(e)) {
+                return;
+                }
+                if (gameCheck(DOT_HUMAN, STATE_WIN_HUMAN)) {
+                return;
+                }
+                this.playerNumTurn++;
+        } else {
+            if (!player2Turn(e)) {
+                return;
+            }
+            if (gameCheck(DOT_HUMAN2, STATE_WIN_HUMAN2)) {
+                return;
+            }
+            this.playerNumTurn--;
+        }
+
+
     }
 
     private boolean playerTurn(MouseEvent event) {
@@ -157,6 +182,7 @@ public class GameMap extends JPanel {
 
     public void startNewGame(int gameMode, int fieldSize, int winLength) {
         this.gameMode = gameMode;
+        if (this.gameMode == MODE_VS_HUMAN) {playerNumTurn = 1;}
         fieldSizeX = fieldSize;
         fieldSizeY = fieldSize;
         this.winLength = winLength;
@@ -175,6 +201,7 @@ public class GameMap extends JPanel {
         switch (stateGameOver) {
             case STATE_DRAW -> g.drawString("DRAW", getWidth() / 4, getHeight() / 2);
             case STATE_WIN_HUMAN -> g.drawString("HUMAN WIN", getWidth() / 4, getHeight() / 2);
+            case STATE_WIN_HUMAN2 -> g.drawString("HUMAN2 WIN", getWidth() / 4, getHeight() / 2);
             case STATE_WIN_AI -> g.drawString("AI WIN", getWidth() / 4, getHeight() / 2);
         }
     }
